@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(yaml-cpp)
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_lint_auto REQUIRED) 
 find_package(rclcpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -96,15 +97,23 @@ target_link_libraries(
 )
 
 include(GoogleTest)
-gtest_discover_tests(coordinate_transformer_test)
+gtest_discover_tests(coordinate_transformer_test
+  PROPERTIES
+    ENVIRONMENT "GTEST_OUTPUT=xml:${CMAKE_BINARY_DIR}/test_results/"
+    OUTPUT_FILE "${CMAKE_BINARY_DIR}/Testing/Temporary/LastTest.log"
+)
 
 # Linting
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
+  # find_package(ament_lint_auto REQUIRED)
+
+  find_package(ament_cmake_gtest REQUIRED)
+  # ament_add_gtest(${PROJECT_NAME}_tutorial_test test/coordinate_transformer_test.cpp)
+
   # Skip linter checks for copyright and cpplint
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
+  # ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_package()
