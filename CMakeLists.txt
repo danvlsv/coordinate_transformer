@@ -5,17 +5,27 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
-# find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 
-# find_package(rclcpp REQUIRED)
-# find_package(tf2 REQUIRED)
-# find_package(tf2_ros REQUIRED)
+include(FetchContent)
+
+# Add yaml-cpp 
+
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG master # Can be a tag (yaml-cpp-x.x.x), a commit hash, or a branch name (master)
+)
+FetchContent_MakeAvailable(yaml-cpp)
 
 
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
   include/coordinate_transformer
@@ -23,63 +33,76 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   ament_cmake
-  # Boost
-  # control_msgs
-  # Eigen3
-  # interactive_markers
-  # moveit_core
-  # moveit_msgs
-  # moveit_ros_planning
-  # moveit_ros_planning_interface
-  # moveit_servo
-  # moveit_task_constructor_core
-  # moveit_visual_tools
-  # pluginlib
   rclcpp
   geometry_msgs
-  # rclcpp_action
-  # rviz_visual_tools
   tf2
+  tf2_geometry_msgs
   tf2_ros
+  yaml-cpp
 )
-
-
-foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
-  find_package(${Dependency} REQUIRED)
-endforeach()
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
 
-
-ament_export_dependencies(
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
-)
-
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_export_include_directories(include)
 
 
-add_subdirectory(yaml-cpp)  
-
-target_link_libraries(yaml-cpp)
 
 
+
+
+# Add library for coordinate_transformer
+add_library(coordinate_transformer
+  src/coordinate_transformer.cpp
+)
+
+ament_target_dependencies(coordinate_transformer
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+
+target_include_directories(coordinate_transformer PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+# Link yaml-cpp to the library
+# target_link_libraries(coordinate_transformer PUBLIC yaml-cpp::yaml-cpp)
+
+# Add GoogleTest
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG main
 )
-
 FetchContent_MakeAvailable(googletest)
 
+enable_testing()
 
+# Add test executable
+add_executable(
+  coordinate_transformer_test
+  test/coordinate_transformer_test.cpp
+)
+
+ament_target_dependencies(coordinate_transformer_test
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+
+target_link_libraries(
+  coordinate_transformer_test
+  GTest::gtest_main
+  coordinate_transformer
+)
+
+include(GoogleTest)
+gtest_discover_tests(coordinate_transformer_test)
+
+# Linting
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
+  # Skip linter checks for copyright and cpplint
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
