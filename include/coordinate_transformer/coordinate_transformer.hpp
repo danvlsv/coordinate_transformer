@@ -13,6 +13,8 @@
 #include <unordered_map.h>
 #include <string>
 
+#include <yaml.hpp>
+
 enum class ResultStatus
 {
     SUCCESS,
