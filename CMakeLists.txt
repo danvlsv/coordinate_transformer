@@ -94,6 +94,7 @@ target_link_libraries(
   coordinate_transformer_test
   GTest::gtest_main
   coordinate_transformer
+  yaml-cpp
 )
 
 include(GoogleTest)

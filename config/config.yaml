@@ -1,0 +1,23 @@
+transforms:
+  - parent_frame: "world"
+    child_frame: "robot_base"
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+  - parent_frame: "robot_base"
+    child_frame: "frame1"
+    translation:
+      x: 0.5
+      y: 0.5
+      z: 0.5
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0

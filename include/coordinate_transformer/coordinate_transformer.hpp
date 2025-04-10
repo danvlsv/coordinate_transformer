@@ -8,6 +8,7 @@
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 // #include <tf2_ros/transform_listener.h>
 
 #include <unordered_map>
@@ -56,6 +57,7 @@ private:
     tf2_ros::Buffer tf_buffer;
     std::unordered_map<std::string, std::pair<geometry_msgs::msg::Point, geometry_msgs::msg::Point>> bounds;
     std::unordered_map<std::string, geometry_msgs::msg::TransformStamped> custom_transforms;
+    tf2_ros::TransformListener tf_listener;
 };
 
 #endif
