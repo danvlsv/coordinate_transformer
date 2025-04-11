@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(coordinate_transformer)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -27,6 +31,7 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
   include/coordinate_transformer
@@ -40,6 +45,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   tf2_geometry_msgs
   tf2_ros
   yaml-cpp
+  ament_index_cpp
 )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
@@ -88,6 +94,7 @@ add_executable(
 
 ament_target_dependencies(coordinate_transformer_test
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
+  ament_index_cpp
 )
 
 target_link_libraries(
@@ -95,6 +102,7 @@ target_link_libraries(
   GTest::gtest_main
   coordinate_transformer
   yaml-cpp
+  ${ament_index_cpp_LIBRARIES} 
 )
 
 include(GoogleTest)
@@ -104,13 +112,21 @@ gtest_discover_tests(coordinate_transformer_test
     OUTPUT_FILE "${CMAKE_BINARY_DIR}/Testing/Temporary/LastTest.log"
 )
 
+install(DIRECTORY
+  config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
 # Linting
 if(BUILD_TESTING)
   # find_package(ament_lint_auto REQUIRED)
 
   find_package(ament_cmake_gtest REQUIRED)
   # ament_add_gtest(${PROJECT_NAME}_tutorial_test test/coordinate_transformer_test.cpp)
-
+  install(DIRECTORY
+  test/configs/
+  DESTINATION share/${PROJECT_NAME}/test/configs
+)
   # Skip linter checks for copyright and cpplint
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
