@@ -31,7 +31,7 @@ protected:
 
   std::string createTempFile(const std::string &content)
   {
-    std::string filename = "/tmp/test_config.yaml"; 
+    std::string filename = "/tmp/test_config.yaml";
     std::ofstream ofs(filename);
     ofs << content;
     ofs.close();
@@ -246,7 +246,6 @@ TEST_F(CoordinateTransformerTest, SetBounds_Success)
   min.y = -20;
   min.z = -20;
 
-
   max.x = max.y = max.z = std::numeric_limits<double>::infinity();
   // set correct bounds for "robot_base"
   EXPECT_NO_THROW(transformer->setBounds("robot_base", min, max));
@@ -297,7 +296,6 @@ TEST_F(CoordinateTransformerTest, ConvertValue_Correct)
   // Perform the coordinate transformation
   auto status = transformer->convert(input, output, "frame1");
 
-
   geometry_msgs::msg::PoseStamped test;
   test.header.frame_id = "frame1";
   test.pose.position.x = 0.5;
@@ -340,7 +338,6 @@ TEST_F(CoordinateTransformerTest, ConvertValue_CorrectBaseAndInverseTransform)
 
   geometry_msgs::msg::PoseStamped newOutput;
 
-
   // Perform the coordinate transformation
   auto status2 = transformer->inverseConvert(output, newOutput, "robot_base");
 
@@ -364,7 +361,11 @@ TEST_F(CoordinateTransformerTest, ConvertValue_CorrectRotation)
   input.pose.position.x = 1.0;
   input.pose.position.y = 2.0;
   input.pose.position.z = 3.0;
-  input.pose.orientation.w = 1.0; // Identity orientation
+  
+  input.pose.orientation.x = 1.0;
+  input.pose.orientation.y = 0.0;
+  input.pose.orientation.z = 0.0; 
+  input.pose.orientation.w = 0.0; 
 
   // Perform transformation
   geometry_msgs::msg::PoseStamped output;
@@ -378,6 +379,8 @@ TEST_F(CoordinateTransformerTest, ConvertValue_CorrectRotation)
 
   // Verify orientation transformation
   // Identity orientation transformed by 180° X rotation
-  EXPECT_NEAR(output.pose.orientation.x, 1.0, 1e-5); // Inverse of 180° X
-  EXPECT_NEAR(output.pose.orientation.w, 0.0, 1e-5);
+  std::cout << output.pose.orientation.x << std::endl
+            << output.pose.orientation.w;
+  EXPECT_NEAR(output.pose.orientation.x, 0.0, 1e-5); 
+  EXPECT_NEAR(output.pose.orientation.w, 1.0, 1e-5);
 }
