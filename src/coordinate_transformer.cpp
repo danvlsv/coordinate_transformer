@@ -10,7 +10,6 @@ namespace CoordinateTransformer
     {
         try
         {
-            // Используем tf2 для преобразования
             output = tf_buffer.transform(input, target_frame);
 
             if (bounds.count(target_frame))
@@ -43,7 +42,6 @@ namespace CoordinateTransformer
     {
         try
         {
-            // Используем tf2 для преобразования
             output = tf_buffer.transform(input, source_frame);
 
             if (bounds.count(source_frame))

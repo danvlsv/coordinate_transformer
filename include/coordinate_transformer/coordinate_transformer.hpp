@@ -9,7 +9,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-// #include <tf2_ros/transform_listener.h>
 
 #include <unordered_map>
 #include <string>
@@ -54,7 +53,6 @@ namespace CoordinateTransformer
             geometry_msgs::msg::PoseStamped &output,
             const std::string &target_frame);
 
-        // Обратное преобразование (из целевой системы в исходную)
 
         /// @brief Transforms a pose from its current frame to the source frame
         /// @param input Input pose to transform (must contain valid header.frame_id)

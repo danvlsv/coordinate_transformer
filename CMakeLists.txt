@@ -72,9 +72,6 @@ target_include_directories(coordinate_transformer PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-# Link yaml-cpp to the library
-# target_link_libraries(coordinate_transformer PUBLIC yaml-cpp::yaml-cpp)
-
 # Add GoogleTest
 include(FetchContent)
 FetchContent_Declare(
@@ -122,7 +119,6 @@ if(BUILD_TESTING)
   # find_package(ament_lint_auto REQUIRED)
 
   find_package(ament_cmake_gtest REQUIRED)
-  # ament_add_gtest(${PROJECT_NAME}_tutorial_test test/coordinate_transformer_test.cpp)
   install(DIRECTORY
   test/configs/
   DESTINATION share/${PROJECT_NAME}/test/configs

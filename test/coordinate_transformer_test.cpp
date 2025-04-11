@@ -31,13 +31,14 @@ protected:
 
   std::string createTempFile(const std::string &content)
   {
-    std::string filename = "/tmp/test_config.yaml"; // Use a temporary path
+    std::string filename = "/tmp/test_config.yaml"; 
     std::ofstream ofs(filename);
     ofs << content;
     ofs.close();
     return filename;
   }
 
+  // get config files from "/test/configs"
   std::string getConfigPath(const std::string &config_name)
   {
     return (std::filesystem::path(package_share_dir) / "test" / "configs" / config_name).string();
@@ -122,19 +123,19 @@ transforms:
 
 TEST_F(CoordinateTransformerTest, LoadConfig_BadBounds)
 {
-  // Assuming you have a valid config.yaml file in the test directory
+  // config file with wrong bounds
   EXPECT_THROW(transformer->loadConfig(getConfigPath("configBadBounds.yaml")), CoordinateTransformer::Exceptions::ParsedBadBoundsException);
 }
 
 TEST_F(CoordinateTransformerTest, LoadConfig_NoTransforms)
 {
-  // Assuming you have a valid config.yaml file in the test directory
+  // config file with no transforms
   EXPECT_THROW(transformer->loadConfig(getConfigPath("configNoTransforms.yaml")), CoordinateTransformer::Exceptions::NoTransformsFoundException);
 }
 
 TEST_F(CoordinateTransformerTest, LoadConfig_InvalidBounds)
 {
-  // Assuming you have a valid config.yaml file in the test directory
+  // config file with invalid or inverted bounds
   EXPECT_THROW(transformer->loadConfig(getConfigPath("configInvalidBounds.yaml")), CoordinateTransformer::Exceptions::ParsedInvalidBoundsException);
 }
 
@@ -171,7 +172,7 @@ TEST_F(CoordinateTransformerTest, Convert_OutOfBounds)
   // Perform the coordinate transformation
   auto status = transformer->convert(input, output, "frame1");
 
-  // Check that the transformation was successful
+  // Checking that the transformation was out of bounds
   EXPECT_EQ(status, CoordinateTransformer::ResultStatus::OUT_OF_BOUNDS);
 }
 
@@ -195,7 +196,7 @@ TEST_F(CoordinateTransformerTest, Convert_TransformNotFound)
   // Perform the coordinate transformation
   auto status = transformer->convert(input, output, "robot_base");
 
-  // Check that the transformation failed
+  // Checking that the transformation failed, because transform wasn't found
   EXPECT_EQ(status, CoordinateTransformer::ResultStatus::TRANSFORM_NOT_FOUND);
 }
 
@@ -218,7 +219,7 @@ TEST_F(CoordinateTransformerTest, Convert_Success)
   // Perform the coordinate transformation
   auto status = transformer->convert(input, output, "frame1");
 
-  // Check that the transformation failed
+  // Checking that the transformation was successful
   EXPECT_EQ(status, CoordinateTransformer::ResultStatus::SUCCESS);
 }
 
@@ -245,7 +246,9 @@ TEST_F(CoordinateTransformerTest, SetBounds_Success)
   min.y = -20;
   min.z = -20;
 
+
   max.x = max.y = max.z = std::numeric_limits<double>::infinity();
+  // set correct bounds for "robot_base"
   EXPECT_NO_THROW(transformer->setBounds("robot_base", min, max));
 }
 
@@ -259,6 +262,8 @@ TEST_F(CoordinateTransformerTest, SetBounds_FailureInvertedBounds)
 
   min.x = 40;
   min.y = min.z = -20;
+
+  // set inverted bounds for "robot_base"
   EXPECT_THROW(transformer->setBounds("robot_base", min, max), CoordinateTransformer::Exceptions::InvertedBoundsException);
 }
 
@@ -268,6 +273,8 @@ TEST_F(CoordinateTransformerTest, SetBounds_FailureEqual)
   geometry_msgs::msg::Point min, max;
   max.x = max.y = max.z = -20;
   min.x = min.y = min.z = -20;
+
+  // set equal bounds for "robot_base"
   EXPECT_THROW(transformer->setBounds("robot_base", min, max), CoordinateTransformer::Exceptions::EqualBoundsException);
 }
 
@@ -289,6 +296,7 @@ TEST_F(CoordinateTransformerTest, ConvertValue_Correct)
 
   // Perform the coordinate transformation
   auto status = transformer->convert(input, output, "frame1");
+
 
   geometry_msgs::msg::PoseStamped test;
   test.header.frame_id = "frame1";
@@ -331,8 +339,10 @@ TEST_F(CoordinateTransformerTest, ConvertValue_CorrectBaseAndInverseTransform)
   output.pose.position.x = 4.25;
 
   geometry_msgs::msg::PoseStamped newOutput;
+
+
   // Perform the coordinate transformation
-  auto status2 = transformer->convert(output, newOutput, "robot_base");
+  auto status2 = transformer->inverseConvert(output, newOutput, "robot_base");
 
   geometry_msgs::msg::PoseStamped test2;
   test2.header.frame_id = "robot_base";
