@@ -35,17 +35,20 @@ namespace CoordinateTransformer
     {
 
     public:
-        /// @brief
-        /// @param node
+        /// @brief Constructs a new Coordinate Transformer instance
+        ///
+        /// @param[in] node Shared pointer to the ROS 2 node (must not be null)
         CoordinateTransformer(rclcpp::Node::SharedPtr node);
 
-        // Прямое преобразование (из исходной системы в целевую)
-
-        /// @brief
-        /// @param input
-        /// @param output
-        /// @param target_frame
-        /// @return
+        /// @brief Transforms a pose from its current frame to the target frame
+        /// @param input Input pose to transform (must contain valid header.frame_id)
+        /// @param output Transformed pose in the target frame
+        /// @param target_frame The frame to transform the input pose into
+        /// @return ResultStatus indicating:
+        ///         - SUCCESS if transform succeeded
+        ///         - INVALID_INPUT if frames are empty or pose is invalid
+        ///         - TRANSFORM_NOT_FOUND if transform unavailable
+        ///         - OUT_OF_BOUNDS if transformed pose exceeds configured bounds
         ResultStatus convert(
             const geometry_msgs::msg::PoseStamped &input,
             geometry_msgs::msg::PoseStamped &output,
@@ -53,30 +56,51 @@ namespace CoordinateTransformer
 
         // Обратное преобразование (из целевой системы в исходную)
 
-        /// @brief
-        /// @param input
-        /// @param output
-        /// @param target_frame
-        /// @return
+        /// @brief Transforms a pose from its current frame to the source frame
+        /// @param input Input pose to transform (must contain valid header.frame_id)
+        /// @param output Transformed pose in the source frame
+        /// @param source_frame The frame to transform the input pose into
+        /// @return ResultStatus indicating:
+        ///         - SUCCESS if transform succeeded
+        ///         - INVALID_INPUT if frames are empty or pose is invalid
+        ///         - TRANSFORM_NOT_FOUND if transform unavailable
+        ///         - OUT_OF_BOUNDS if transformed pose exceeds configured bounds
         ResultStatus inverseConvert(
             const geometry_msgs::msg::PoseStamped &input,
             geometry_msgs::msg::PoseStamped &output,
             const std::string &source_frame);
 
-        /// @brief Adds transform to private map and 
-        /// @param transform
+        /// @brief Adds a static transform to the internal transform map
+        /// @param transform The transform to add, containing:
+        ///            - header.frame_id (parent frame)
+        ///            - child_frame_id (child frame)
+        ///            - transform.translation (x,y,z offsets)
+        ///            - transform.rotation (quaternion orientation)
+        /// @note Overwrites any existing transform for the same frame pair
+        /// @note The transform will be used for all future conversions between these frames
         void addTransform(const geometry_msgs::msg::TransformStamped &transform);
 
-        /// @brief
-        /// @param frame_id
-        /// @param min
-        /// @param max
+        /// @brief Sets box constraints for a specified frame
+        /// @param frame_id The frame these bounds apply to
+        /// @param min Minimum corner point of the bounding box (x,y,z coordinates)
+        /// @param max Maximum corner point of the bounding box (x,y,z coordinates)
         void setBounds(const std::string &frame_id,
                        const geometry_msgs::msg::Point &min,
                        const geometry_msgs::msg::Point &max);
 
-        /// @brief
-        /// @param config_file
+        /// @brief Loads transform and bounds configuration from a YAML file
+        /// @param config_file Path to the YAML configuration file with:
+        ///            - "transforms": List of transform definitions
+        ///              - parent_frame: Parent frame ID (string)
+        ///              - child_frame: Child frame ID (string)
+        ///              - translation: {x, y, z} offsets (meters)
+        ///              - rotation: {x, y, z, w} quaternion components
+        ///            - "bounds": List of bounding box definitions
+        ///              - frame: Target frame ID (string)
+        ///              - min_translation: {x, y, z} minimum bounds
+        ///              - max_translation: {x, y, z} maximum bounds
+        /// @note Merges with existing configuration (does not clear previous transforms/bounds)
+        /// @note Overwrites existing entries with matching frame IDs
         void loadConfig(const std::string &config_file);
 
     private:

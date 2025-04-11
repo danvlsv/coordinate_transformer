@@ -270,3 +270,104 @@ TEST_F(CoordinateTransformerTest, SetBounds_FailureEqual)
   min.x = min.y = min.z = -20;
   EXPECT_THROW(transformer->setBounds("robot_base", min, max), CoordinateTransformer::Exceptions::EqualBoundsException);
 }
+
+TEST_F(CoordinateTransformerTest, ConvertValue_Correct)
+{
+  // Load a valid configuration
+  transformer->loadConfig(getConfigPath("config.yaml"));
+
+  // Create an input PoseStamped message
+  geometry_msgs::msg::PoseStamped input;
+  input.header.frame_id = "robot_base";
+  input.pose.position.x = 1.0;
+  input.pose.position.y = 2.0;
+  input.pose.position.z = 0.0;
+  input.pose.orientation.w = 1.0; // No rotation
+
+  // Prepare an output PoseStamped message
+  geometry_msgs::msg::PoseStamped output;
+
+  // Perform the coordinate transformation
+  auto status = transformer->convert(input, output, "frame1");
+
+  geometry_msgs::msg::PoseStamped test;
+  test.header.frame_id = "frame1";
+  test.pose.position.x = 0.5;
+  test.pose.position.y = 1.5;
+  test.pose.position.z = -0.5;
+  test.pose.orientation.w = 1.0; // No rotation
+
+  EXPECT_EQ(test, output);
+}
+
+TEST_F(CoordinateTransformerTest, ConvertValue_CorrectBaseAndInverseTransform)
+{
+  // Load a valid configuration
+  transformer->loadConfig(getConfigPath("config.yaml"));
+
+  // Create an input PoseStamped message
+  geometry_msgs::msg::PoseStamped input;
+  input.header.frame_id = "robot_base";
+  input.pose.position.x = 1.0;
+  input.pose.position.y = 2.0;
+  input.pose.position.z = 0.0;
+  input.pose.orientation.w = 1.0; // No rotation
+
+  // Prepare an output PoseStamped message
+  geometry_msgs::msg::PoseStamped output;
+
+  // Perform the coordinate transformation
+  auto status = transformer->convert(input, output, "frame1");
+
+  geometry_msgs::msg::PoseStamped test;
+  test.header.frame_id = "frame1";
+  test.pose.position.x = 0.5;
+  test.pose.position.y = 1.5;
+  test.pose.position.z = -0.5;
+  test.pose.orientation.w = 1.0; // No rotation
+
+  EXPECT_EQ(test, output);
+
+  output.pose.position.x = 4.25;
+
+  geometry_msgs::msg::PoseStamped newOutput;
+  // Perform the coordinate transformation
+  auto status2 = transformer->convert(output, newOutput, "robot_base");
+
+  geometry_msgs::msg::PoseStamped test2;
+  test2.header.frame_id = "robot_base";
+  test2.pose.position.x = 4.75;
+  test2.pose.position.y = 2.0;
+  test2.pose.position.z = 0.0;
+  test2.pose.orientation.w = 1.0; // No rotation
+
+  EXPECT_EQ(test2, newOutput);
+}
+
+TEST_F(CoordinateTransformerTest, ConvertValue_CorrectRotation)
+{
+  transformer->loadConfig(getConfigPath("configRotation.yaml"));
+
+  // Input pose in robot_base frame
+  geometry_msgs::msg::PoseStamped input;
+  input.header.frame_id = "robot_base";
+  input.pose.position.x = 1.0;
+  input.pose.position.y = 2.0;
+  input.pose.position.z = 3.0;
+  input.pose.orientation.w = 1.0; // Identity orientation
+
+  // Perform transformation
+  geometry_msgs::msg::PoseStamped output;
+  auto status = transformer->convert(input, output, "rotated_frame");
+
+  // Verify position transformation
+  // 180° X rotation: (x,y,z) → (x,-y,-z)
+  EXPECT_NEAR(output.pose.position.x, 1.0, 1e-5);  // X unchanged
+  EXPECT_NEAR(output.pose.position.y, -2.0, 1e-5); // Y inverted
+  EXPECT_NEAR(output.pose.position.z, -3.0, 1e-5); // Z inverted
+
+  // Verify orientation transformation
+  // Identity orientation transformed by 180° X rotation
+  EXPECT_NEAR(output.pose.orientation.x, 1.0, 1e-5); // Inverse of 180° X
+  EXPECT_NEAR(output.pose.orientation.w, 0.0, 1e-5);
+}
