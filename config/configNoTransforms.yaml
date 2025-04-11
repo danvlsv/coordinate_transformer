@@ -1,0 +1,10 @@
+bounds:
+  - frame: "frame1"
+    min_translation:
+      x: -1.0
+      y: -1.0
+      z: -1.0
+    max_translation:
+      x: 1.0
+      y: 1.0
+      z: 1.0
